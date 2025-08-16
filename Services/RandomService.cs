@@ -1,4 +1,5 @@
-﻿using ProvaPub.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using ProvaPub.Models;
 using ProvaPub.Repository.Interfaces;
 
 namespace ProvaPub.Services
@@ -15,14 +16,14 @@ namespace ProvaPub.Services
 
         public async Task<int> GetRandom()
 		{
-            var number = GenerateRandomNumber();            
+            var number = GenerateRandomNumber();
 
-            if(_numberRepository.CountNumbers() >= limitRandomNumbers)
+            if (await _numberRepository.Query().CountAsync() >= limitRandomNumbers)
             {
                 throw new Exception("Não há mais números aleatórios possíveis para serem gerados.");
             }
 
-            while (_numberRepository.NumberExists(number))
+            while (await _numberRepository.Query().AnyAsync(x => x.Number == number))
             {
                 number = GenerateRandomNumber();
             }

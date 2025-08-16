@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProvaPub.Models;
 using ProvaPub.Repository;
+using ProvaPub.Repository.Interfaces;
 using ProvaPub.Services;
 
 namespace ProvaPub.Controllers
@@ -18,10 +19,9 @@ namespace ProvaPub.Controllers
 	[Route("[controller]")]
 	public class Parte4Controller :  ControllerBase
 	{
-        TestDbContext _ctx;
-        public Parte4Controller(TestDbContext ctx)
-        {
-            _ctx = ctx;
+        ICustomerRepository _ctx; //temp
+        public Parte4Controller()
+        {            
         }
 
         [HttpGet("CanPurchase")]
