@@ -1,44 +1,40 @@
 ﻿using ProvaPub.Models;
-using ProvaPub.Repository;
+using ProvaPub.Repository.Interfaces;
+using ProvaPub.Services.Interfaces;
+using ProvaPub.Utils;
 
 namespace ProvaPub.Services
 {
-	public class OrderService
-	{
-        TestDbContext _ctx;
+	public class OrderService : IOrderService
+	{       
+        IOrderRepository _orderRepository;
+        PaymentService _paymentService;
 
-        public OrderService(TestDbContext ctx)
+        public OrderService(IOrderRepository orderRepository, PaymentService paymentService)
         {
-            _ctx = ctx;
+            _orderRepository = orderRepository;
+            _paymentService = paymentService;            
         }
 
         public async Task<Order> PayOrder(string paymentMethod, decimal paymentValue, int customerId)
 		{
-			if (paymentMethod == "pix")
-			{
-				//Faz pagamento...
-			}
-			else if (paymentMethod == "creditcard")
-			{
-				//Faz pagamento...
-			}
-			else if (paymentMethod == "paypal")
-			{
-				//Faz pagamento...
-			}
+            _paymentService.Pay(paymentMethod);
 
-			return await InsertOrder(new Order() //Retorna o pedido para o controller
+			return await InsertOrder(new Order()
             {
-                Value = paymentValue
+                Value = paymentValue,
+                CustomerId = customerId,
+                OrderDate = DateTime.UtcNow
             });
-
-
 		}
 
 		public async Task<Order> InsertOrder(Order order)
-        {
-			//Insere pedido no banco de dados
-			return (await _ctx.Orders.AddAsync(order)).Entity;
+        {            
+            var result = await _orderRepository.AddAsync(order);
+
+            result.OrderDate = DateUtil.ConvertFromUTCToBrazilianTimeZone(result.OrderDate);
+            
+            return result;
         }
 	}
 }

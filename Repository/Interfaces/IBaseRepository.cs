@@ -6,6 +6,7 @@ namespace ProvaPub.Repository.Interfaces
     {
         IQueryable<T> Query();
         int Add(T entity);
-        Task<ListModel<T>> GetAllPagingAsync(int page, int pageSize);
+        Task<T> AddAsync(T entity);
+        Task<ListModel<T>> GetAllPagingAsync(int page, int pageSize);        
     }
 }

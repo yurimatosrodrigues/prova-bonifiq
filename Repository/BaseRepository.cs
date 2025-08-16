@@ -20,6 +20,15 @@ namespace ProvaPub.Repository
             return saved;
         }
 
+        public async Task<T> AddAsync(T entity)
+        {
+            var result = await _context.AddAsync(entity);
+
+            await _context.SaveChangesAsync();
+
+            return result.Entity;
+        }
+
         public async Task<ListModel<T>> GetAllPagingAsync(int page, int pageSize)
         {
             int countItems = await Query().CountAsync();
