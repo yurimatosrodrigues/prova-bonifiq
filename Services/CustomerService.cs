@@ -1,21 +1,23 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ProvaPub.Models;
-using ProvaPub.Repository;
+﻿using ProvaPub.Models;
 using ProvaPub.Repository.Interfaces;
 using ProvaPub.Services.Interfaces;
+using ProvaPub.Utils;
 
 namespace ProvaPub.Services
 {
     public class CustomerService : ICustomerService
     {
         ICustomerRepository _customerRepository;
-        int pageSize = 10;
+        IOrderRepository _orderRepository;
+        Helper _helper;
 
-        TestDbContext _ctx; //temp
+        int pageSize = 10;               
 
-        public CustomerService(ICustomerRepository customerRepository)
+        public CustomerService(ICustomerRepository customerRepository, IOrderRepository orderRepository, Helper helper)
         {
             _customerRepository = customerRepository;
+            _orderRepository = orderRepository;
+            _helper = helper;
         }
 
         public async Task<CustomerList> ListCustomers(int page)
@@ -36,27 +38,27 @@ namespace ProvaPub.Services
             if (purchaseValue <= 0) throw new ArgumentOutOfRangeException(nameof(purchaseValue));
 
             //Business Rule: Non registered Customers cannot purchase
-            var customer = await _ctx.Customers.FindAsync(customerId);
+            var customer = await _customerRepository.GetByIdAsync(customerId);
             if (customer == null) throw new InvalidOperationException($"Customer Id {customerId} does not exists");
 
             //Business Rule: A customer can purchase only a single time per month
             var baseDate = DateTime.UtcNow.AddMonths(-1);
-            var ordersInThisMonth = await _ctx.Orders.CountAsync(s => s.CustomerId == customerId && s.OrderDate >= baseDate);
+            var orders = await _orderRepository.GetOrdersByCustomer(customerId);
+            var ordersInThisMonth = orders.Count(x => x.OrderDate >= baseDate);
+
             if (ordersInThisMonth > 0)
                 return false;
 
-            //Business Rule: A customer that never bought before can make a first purchase of maximum 100,00
-            var haveBoughtBefore = await _ctx.Customers.CountAsync(s => s.Id == customerId && s.Orders.Any());
+            //Business Rule: A customer that never bought before can make a first purchase of maximum 100,00            
+            var haveBoughtBefore = orders.Count;
             if (haveBoughtBefore == 0 && purchaseValue > 100)
                 return false;
 
             //Business Rule: A customer can purchases only during business hours and working days
-            if (DateTime.UtcNow.Hour < 8 || DateTime.UtcNow.Hour > 18 || DateTime.UtcNow.DayOfWeek == DayOfWeek.Saturday || DateTime.UtcNow.DayOfWeek == DayOfWeek.Sunday)
+            if (_helper.IsOutsideWorkingHoursDays())
                 return false;
-
 
             return true;
         }
-
     }
 }

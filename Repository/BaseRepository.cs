@@ -47,6 +47,11 @@ namespace ProvaPub.Repository
             };
         }
 
+        public async Task<T> GetByIdAsync(int id)
+        {
+            return await _context.Set<T>().FindAsync(id);
+        }
+
         public IQueryable<T> Query()
         {
             return _context.Set<T>().AsQueryable();

@@ -4,6 +4,7 @@ using ProvaPub.Repository;
 using ProvaPub.Repository.Interfaces;
 using ProvaPub.Services;
 using ProvaPub.Services.Interfaces;
+using ProvaPub.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,7 @@ builder.Services.AddTransient<IPayment, CreditCard>();
 builder.Services.AddTransient<IPayment, Paypal>();
 
 builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<Helper>();
 
 builder.Services.AddDbContext<TestDbContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("ctx")));
