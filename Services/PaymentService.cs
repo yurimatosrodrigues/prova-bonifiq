@@ -18,7 +18,7 @@ namespace ProvaPub.Services
                 .FirstOrDefault();
 
             if (method == null)
-                throw new Exception("Forma de pagamento inválida.");
+                throw new InvalidOperationException($"Payment method {paymentMethod} does not exists.");
 
             method.Pay();
         }

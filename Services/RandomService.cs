@@ -20,7 +20,7 @@ namespace ProvaPub.Services
 
             if (await _numberRepository.Query().CountAsync() >= limitRandomNumbers)
             {
-                throw new Exception("Não há mais números aleatórios possíveis para serem gerados.");
+                throw new InvalidOperationException("There are no more possible random numbers to be generated.");
             }
 
             while (await _numberRepository.Query().AnyAsync(x => x.Number == number))
@@ -28,7 +28,7 @@ namespace ProvaPub.Services
                 number = GenerateRandomNumber();
             }
 
-            _numberRepository.Add(new RandomNumber() { Number = number });
+            await _numberRepository.AddAsync(new RandomNumber() { Number = number });
 
             return number;
         }
@@ -36,7 +36,7 @@ namespace ProvaPub.Services
         private int GenerateRandomNumber()
         {
             int seed = Guid.NewGuid().GetHashCode();
-            var number = new Random(seed).Next(limitRandomNumbers);            
+            var number = new Random(seed).Next(limitRandomNumbers);
             return number;
         }
 
